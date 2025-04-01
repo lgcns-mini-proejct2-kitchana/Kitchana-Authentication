@@ -90,7 +90,6 @@ pipeline {
                                         cd /home/ec2-user/tmp
                                         chmod +x deploy-auth.sh
                                         export TAG=${tag}
-                                        export CONTAINER_NAME=kitchana-authentication
                                         ./deploy-auth.sh
                                     """,
                                     execTimeout: 180000,
