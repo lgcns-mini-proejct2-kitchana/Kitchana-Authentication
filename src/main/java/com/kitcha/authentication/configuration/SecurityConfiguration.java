@@ -42,7 +42,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .anyRequest().permitAll())
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {});
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();
     }
