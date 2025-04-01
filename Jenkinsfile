@@ -39,17 +39,16 @@ pipeline {
             steps {
                 script {
                     def tag = (params.TAG == 'latest' || params.TAG.trim() == '') ? env.BUILD_NUMBER : params.TAG
-                    
+
                     sshPublisher(publishers: [
                         sshPublisherDesc(
-                            configName: 'kitchana-docker',  // EC2에 대한 SSH 구성 이름
+                            configName: 'kitchana-docker',
                             transfers: [
                                 sshTransfer(
                                     cleanRemote: false,
                                     excludes: '',
                                     execCommand: """
                                         docker build -t ${env.AWS_ECR_URI}/kitchana/authentication:${tag} -f ./inner/DockerfileAuth ./inner
-    
                                         docker push ${env.AWS_ECR_URI}/kitchana/authentication:${tag}
                                     """,
                                     execTimeout: 180000,
@@ -69,12 +68,10 @@ pipeline {
                         )
                     ])
                 }
-                
             }
         }
-    }
 
-    stage('Deploy to EC2') {
+        stage('Deploy to EC2') {
             steps {
                 script {
                     def tag = (params.TAG == 'latest' || params.TAG.trim() == '') ? env.BUILD_NUMBER : params.TAG
@@ -93,7 +90,7 @@ pipeline {
                                         cd /home/ec2-user/tmp
                                         chmod +x deploy-auth.sh
                                         export TAG=${tag}
-                                        export CONTAINER_NAME=kitchana-article
+                                        export CONTAINER_NAME=kitchana-authentication
                                         ./deploy-auth.sh
                                     """,
                                     execTimeout: 180000,
