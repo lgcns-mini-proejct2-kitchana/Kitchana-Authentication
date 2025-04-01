@@ -50,7 +50,11 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("https://api.kitchana.shop", "http://localhost:3000")); // 필요한 경우 도메인 지정 가능
+        config.setAllowedOrigins(List.of(
+                "https://kitchana.shop",
+                "https://api.kitchana.shop",
+                "http://localhost:3000"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // 필요 시
