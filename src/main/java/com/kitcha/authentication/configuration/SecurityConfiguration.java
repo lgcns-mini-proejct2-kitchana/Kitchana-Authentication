@@ -57,6 +57,11 @@ public class SecurityConfiguration {
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of(
+                "Authorization",
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials"
+        ));
         config.setAllowCredentials(true); // 필요 시
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
