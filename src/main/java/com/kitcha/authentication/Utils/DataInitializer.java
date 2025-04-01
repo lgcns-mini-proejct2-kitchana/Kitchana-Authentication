@@ -26,18 +26,20 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        UserEntity user = new UserEntity();
-        user.setNickname("testUser");
-        user.setEmail("test@test.com");
-        user.setPassword(testUserPassword);
-        user.setRole("USER");
-        user.setInterest("경제");
-        UserEntity admin = new UserEntity();
-        admin.setNickname("admin");
-        admin.setEmail("admin@kitcha.shop");
-        admin.setPassword(adminPassword);
-        admin.setRole("ADMIN");
-        userRepository.save(user);
-        userRepository.save(admin);
+        if (userRepository.count() == 0) {
+            UserEntity user = new UserEntity();
+            user.setNickname("testUser");
+            user.setEmail("test@test.com");
+            user.setPassword(testUserPassword);
+            user.setRole("USER");
+            user.setInterest("경제");
+            UserEntity admin = new UserEntity();
+            admin.setNickname("admin");
+            admin.setEmail("admin@kitcha.shop");
+            admin.setPassword(adminPassword);
+            admin.setRole("ADMIN");
+            userRepository.save(user);
+            userRepository.save(admin);
+        }
     }
 }
