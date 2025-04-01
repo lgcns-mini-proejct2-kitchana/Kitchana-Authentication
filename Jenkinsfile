@@ -37,34 +37,78 @@ pipeline {
 
         stage('Build Docker Image & Push to ECR') {
             steps {
-                sshPublisher(publishers: [
-                    sshPublisherDesc(
-                        configName: 'kitchana-docker',  // EC2에 대한 SSH 구성 이름
-                        transfers: [
-                            sshTransfer(
-                                cleanRemote: false,
-                                excludes: '',
-                                execCommand: """
-                                    docker build -t ${env.AWS_ECR_URI}/kitchana/authentication:$TAG -f ./inner/DockerfileAuth .
+                script {
+                    def tag = (params.TAG == 'latest' || params.TAG.trim() == '') ? env.BUILD_NUMBER : params.TAG
+                    
+                    sshPublisher(publishers: [
+                        sshPublisherDesc(
+                            configName: 'kitchana-docker',  // EC2에 대한 SSH 구성 이름
+                            transfers: [
+                                sshTransfer(
+                                    cleanRemote: false,
+                                    excludes: '',
+                                    execCommand: """
+                                        docker build -t ${env.AWS_ECR_URI}/kitchana/authentication:${tag} -f ./inner/DockerfileAuth ./inner
+    
+                                        docker push ${env.AWS_ECR_URI}/kitchana/authentication:${tag}
+                                    """,
+                                    execTimeout: 180000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+',
+                                    remoteDirectory: './inner',
+                                    remoteDirectorySDF: false,
+                                    removePrefix: 'build/libs',
+                                    sourceFiles: 'build/libs/authentication-0.0.1-SNAPSHOT.jar'
+                                )
+                            ],
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: false
+                        )
+                    ])
+                }
+                
+            }
+        }
+    }
 
-                                    docker push ${env.AWS_ECR_URI}/kitchana/authentication:$TAG
-                                """,
-                                execTimeout: 180000,
-                                flatten: false,
-                                makeEmptyDirs: false,
-                                noDefaultExcludes: false,
-                                patternSeparator: '[, ]+',
-                                remoteDirectory: './inner',
-                                remoteDirectorySDF: false,
-                                removePrefix: 'build/libs',
-                                sourceFiles: 'build/libs/authentication-0.0.1-SNAPSHOT.jar'  // 'article' 관련 JAR만 선택
-                            )
-                        ],
-                        usePromotionTimestamp: false,
-                        useWorkspaceInPromotion: false,
-                        verbose: false
-                    )
-                ])
+    stage('Deploy to EC2') {
+            steps {
+                script {
+                    def tag = (params.TAG == 'latest' || params.TAG.trim() == '') ? env.BUILD_NUMBER : params.TAG
+
+                    sshPublisher(publishers: [
+                        sshPublisherDesc(
+                            configName: 'kitchana-docker',
+                            transfers: [
+                                sshTransfer(
+                                    cleanRemote: false,
+                                    excludes: '',
+                                    sourceFiles: 'deploy-auth.sh',
+                                    removePrefix: '',
+                                    remoteDirectory: '/tmp',
+                                    execCommand: """
+                                        cd /home/ec2-user/tmp
+                                        chmod +x deploy-auth.sh
+                                        export TAG=${tag}
+                                        export CONTAINER_NAME=kitchana-article
+                                        ./deploy-auth.sh
+                                    """,
+                                    execTimeout: 180000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+'
+                                )
+                            ],
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: false
+                        )
+                    ])
+                }
             }
         }
     }
